@@ -61,7 +61,8 @@ def refresh_spotify_token(session_id):
     access_token=response.get('access_token')
     token_type=response.get('token_type')
     expires_in=response.get('expires_in')
-    refresh_token=response.get('refresh_token')
+    # refresh_token=response.get('refresh_token')
+    # we dont need last line as refresh token stays the same 
 
     update_or_create_user_tokens(session_id,access_token,token_type,expires_in,refresh_token)
 
@@ -69,10 +70,16 @@ def execute_spotify_api_request(session_id, endpoint, post_=False, put_=False):
     # post_ and put_ to handle diff types of requests, they mirror post and put functions
     tokens= get_user_tokens(session_id)
     headers={'Content-Type':'application/json','Authorization':'Bearer ' + tokens.access_token}
+    # print(session_id)
     if post_:
         post(BASE_URL + endpoint, headers=headers)
     if put_:
+        # print(BASE_URL+endpoint)
+        # print(tokens.access_token)
+        # print(headers)
+        # print(BASE_URL+endpoint, headers=headers)
         put(BASE_URL+endpoint, headers=headers)
+        
     # if no put or post, then get request
     response= get(BASE_URL+ endpoint , {}, headers=headers)
     try:
@@ -80,3 +87,20 @@ def execute_spotify_api_request(session_id, endpoint, post_=False, put_=False):
     except:
         return{'Error':'Request Issue'}
 # with this function we can send req to any spotify endpoint
+
+def play_song(session_id):
+    return execute_spotify_api_request(session_id,'player/play',put_=True)
+    # player/play is endpoint to play song
+
+def pause_song(session_id):
+    # print(session_id)
+    return execute_spotify_api_request(session_id,'player/pause',put_=True)
+    # player/pause is endpoint to play song
+
+def skip_song_next(session_id):
+    return execute_spotify_api_request(session_id,'player/next',post_=True)
+    # player/next is endpoint to skip song
+
+def skip_song_previous(session_id):
+    return execute_spotify_api_request(session_id,'player/previous',post_=True)
+    # player/previous is endpoint to go to previous song

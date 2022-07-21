@@ -21,6 +21,8 @@ class Room(models.Model):
     guest_can_pause = models.BooleanField(null=False,default=False)
     votes_to_skip = models.IntegerField(null=False,default=1)
     created_at = models.DateTimeField(auto_now_add=True)
+    current_song = models.CharField(max_length=50,default="")
+    # current song to keep track of votes for which song
 
 # after creating model we want to set up an api view that can return
 # all rooms that are currently in the database

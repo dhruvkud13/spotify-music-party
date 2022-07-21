@@ -27,8 +27,9 @@ const Room = () => {
             is_playing: false,
             time: 0,
             duration: 0,
-            votes: 0,
-
+            // votes_previous: 0,
+            votes_next: 0,
+            votes_required: 2,
            }
 
         // const[votesToSkip,setVotesToSkip] = useState(2);
@@ -173,7 +174,7 @@ const Room = () => {
             // }
           .then(
             (data)=>{
-              console.log(data.title);
+              // console.log(data.title);
               setSong({
                 
                 title: data.title,
@@ -182,8 +183,9 @@ const Room = () => {
                 is_playing: data.is_playing,
                 time: data.time,
                 duration: data.duration,
-                votes: data.votes,
-              
+                // votes_previous: data.votes_previous,
+                votes_next: data.votes_next,
+                votes_required: data.votes_required,
               });
               
             }
@@ -204,7 +206,7 @@ const Room = () => {
           </Typography>
         </Grid>
         <MusicPlayer song={song} />
-        <h1>titlee:{song.title}</h1>
+        {/* <h1>titlee:{song.title}</h1> */}
         {roomData.is_host ? renderSettingsButton() : null}
         <Grid item xs={12} align="center">
           <Button
