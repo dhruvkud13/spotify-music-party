@@ -2,6 +2,7 @@ import React,{useState,useEffect} from 'react'
 import {useParams, useNavigate} from 'react-router-dom'
 import { Grid, Button, Typography } from "@material-ui/core";
 import UpdateRoomPage from './UpdateRoomPage';
+import MusicPlayer from './MusicPlayer';
 
 
 const Room = () => {
@@ -19,6 +20,17 @@ const Room = () => {
             // song: {}
           }
 
+          const initialSongState={
+            title: "",
+            artist: "",
+            image_url: "",
+            is_playing: false,
+            time: 0,
+            duration: 0,
+            votes: 0,
+
+           }
+
         // const[votesToSkip,setVotesToSkip] = useState(2);
         // const[guestCanPause,setGuestCanPause] = useState(false);
         // const[isHost,setIsHost] = useState(false);
@@ -28,6 +40,7 @@ const Room = () => {
 
         const [roomData, setRoomData] = useState(initialState);
         const [spotifyData, setSpotifyData] = useState(initialStateSpotify)
+        const[song,setSong]=useState(initialSongState)
 
         useEffect(() => {
            fetch('/api/get-room' + '?code=' + roomCode)
@@ -58,6 +71,22 @@ const Room = () => {
                 authenticateSpotify();
               })
         },[roomCode,setRoomData])
+
+        useEffect(()=>{
+            // pulling method coz spotify doesnt support web socket, so we keep sending requests every second
+            // this is to ensure we dont have to always refresh
+            const interval = setInterval(() => {
+              if(spotifyData.is_authenticated===null){
+                console.log('error')
+                return;
+              }
+              else{
+                console.log('success')
+                getCurrentSong();
+              }
+            }, 1000);
+            return () => clearInterval(interval);
+        },[setSpotifyData])
 
         // this function doesnt send us back to room
         function LeaveRoom({}){
@@ -133,6 +162,35 @@ const Room = () => {
             // },[])
         }
 
+        let getCurrentSong=()=>{
+          fetch('/spotify/current-song')
+            .then((response)=>response.json())
+              // if(!response.ok){
+              //   // console.log(response);
+              //   return {};
+              // }
+              // return response;
+            // }
+          .then(
+            (data)=>{
+              console.log(data.title);
+              setSong({
+                
+                title: data.title,
+                artist: data.artist,
+                image_url: data.image_url,
+                is_playing: data.is_playing,
+                time: data.time,
+                duration: data.duration,
+                votes: data.votes,
+              
+              });
+              
+            }
+            
+          )
+        }
+
 
     if (roomData.show_settings) {
         return renderSettings();
@@ -145,21 +203,8 @@ const Room = () => {
             Code: {roomCode}
           </Typography>
         </Grid>
-        <Grid item xs={12} align="center">
-          <Typography variant="h6" component="h6">
-            Votes: {roomData.votes_to_skip}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} align="center">
-          <Typography variant="h6" component="h6">
-            Guest Can Pause: {roomData.guest_can_pause.toString()}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} align="center">
-          <Typography variant="h6" component="h6">
-            Host: {roomData.is_host.toString()}
-          </Typography>
-        </Grid>
+        <MusicPlayer song={song} />
+        <h1>titlee:{song.title}</h1>
         {roomData.is_host ? renderSettingsButton() : null}
         <Grid item xs={12} align="center">
           <Button

@@ -96,5 +96,36 @@ class CurrentSong(APIView):
         # req has to be sent to spotify along with token
         response= execute_spotify_api_request(host, endpoint)
         # we see what is in the response
-        print(response)
-        return Response(response,status=status.HTTP_200_OK)
+        # print(response)
+        # now we get all the song data
+        # item is the key we are looking for it has all info about the song
+        if 'error' in response or 'item' not in response:
+            return Response({},status=status.HTTP_204_NO_CONTENT)
+        # so now we have song then
+        item= response.get('item')
+        duration= item.get('duration_ms')
+        progress= response.get('progress_ms')
+        album_cover= item.get('album').get('images')[0].get('url')
+        is_playing= response.get('is_playing')
+        song_id= item.get('id')
+        # if multiple artists, artist tag will have multiple artists in it
+        artists_string=""
+        for i, artist in enumerate(item.get('artists')):
+            if i>0:
+                # for other artists except first one
+                artists_string+=", "
+            name= artist.get('name')
+            artists_string+=name
+        
+        song={
+            'title': item.get('name'),
+            'artist': artists_string,
+            'duration': duration,
+            'time': progress,
+            'image_url': album_cover,
+            'is_playing': is_playing,
+            'votes':0,
+            'id':song_id
+        }
+
+        return Response(song,status=status.HTTP_200_OK)
